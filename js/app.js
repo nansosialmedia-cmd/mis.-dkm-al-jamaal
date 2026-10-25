@@ -21,14 +21,14 @@ function nav() {
   $('#menu').innerHTML = a('', 'Beranda') + a('agenda', 'Agenda') + (can('dashboard') ? a('dashboard', 'Dashboard') : '') + (can('keuangan') ? a('keuangan', 'Keuangan') : '') + (can('laporan') ? a('laporan', 'Laporan') : '') + (can('rapat') ? a('rapat', 'Rapat') : '') + (can('pengumuman') ? a('pengumuman', 'Pengumuman') : '') + (can('pengguna') ? a('pengguna', 'Pengguna') : '') + (can('log') ? a('log', 'Log') : '') + a('tv', 'Layar TV') +
     (S.user ? `<button class="btn ghost" id="pw">Ganti Sandi</button><button class="btn ghost" id="out">Keluar (${esc(S.user.nama)})</button>` : a('login', 'Login Pengurus'));
   $('#pw')?.addEventListener('click', async () => { const lama = prompt('Sandi lama:'); if (!lama) return; const baru = prompt('Sandi baru (min. 6 karakter):'); if (!baru) return; try { await Api.post('gantiPassword', { lama: lama, baru: baru }); toast('Sandi berhasil diganti'); } catch (z) { authErr(z); } });
-  $('#out')?.addEventListener('click', () => { sessionStorage.clear(); S.user = null; location.hash = '#/'; route(); });
+  $('#out')?.addEventListener('click', () => { sessionStorage.clear(); Cache.clear(); S.user = null; location.hash = '#/'; route(); });
 }
 
 async function loadPub() { if (!S.pub) { try { S.pub = await Api.get('publik'); } catch (e) { S.pub = { jadwal: null, agenda: [], pengumuman: [] }; toast(e.message, 'err'); } } return S.pub; }
 const agendaRows = a => a.length ? a.map(k => `<tr><td class="mono">${esc(k.tanggal)}</td><td><b>${esc(k.nama)}</b></td><td class="mono">${esc(k.waktu)}</td><td>${esc(k.lokasi)}</td><td><span class="tag">${esc(k.kategori)}</span></td></tr>`).join('') : '<tr><td colspan="5" class="empty">Belum ada agenda publik.</td></tr>';
 
 async function vBeranda() {
-  view().innerHTML = '<p class="empty">Memuat…</p>';
+  view().innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   const p = await loadPub(), j = p.jadwal;
   view().innerHTML = `<section class="hero"><div><span class="tag">${j ? esc(j.hijriah) : ''}</span><h1>MASJID AL-JAMAAL</h1><p>Perum. Gading Elok Blok I, Karawang</p>
   <div class="clock mono" id="clk">--:--:--</div></div>
@@ -59,20 +59,20 @@ async function vAgenda() {
   view().innerHTML = `<h1 class="pt">Agenda Kegiatan</h1><div class="tw"><table><thead><tr><th>Tanggal</th><th>Kegiatan</th><th>Waktu</th><th>Lokasi</th><th>Kategori</th></tr></thead><tbody>${agendaRows(bisa ? staff : p.agenda)}</tbody></table></div>${form}`;
   $('#fk')?.addEventListener('submit', async e => {
     e.preventDefault(); const f = e.target, d = Object.fromEntries(new FormData(f)); d.publik = f.publik.checked;
-    try { await Api.post('addKegiatan', d); S.pub = null; toast('Kegiatan tersimpan'); vAgenda(); } catch (x) { toast(x.message, 'err'); }
+    toast('Kegiatan dikirim ✓'); Api.opt('addKegiatan', d, () => Api.patch('u_listKegiatan', L => [Object.assign({ id: 'tmp', status: 'Terjadwal' }, d)].concat(L))).then(() => toast('Kegiatan tersimpan')).catch(authErr);
   });
 }
 
 function vLogin() {
   view().innerHTML = `<div class="card login"><img src="img/logo.png" alt=""><h2>Masuk Pengurus DKM</h2><form id="fl" class="form" style="grid-template-columns:1fr;text-align:left"><label>Username<input name="username" autocomplete="username" required autofocus></label><label>Sandi<input type="password" name="password" autocomplete="current-password" required></label><button class="btn">Masuk</button></form><p class="err" id="lerr"></p></div>`;
-  $('#fl').onsubmit = async e => { e.preventDefault(); try { const m = await Api.post('login', Object.fromEntries(new FormData(e.target))); sessionStorage.setItem('tok', m.token); S.user = m.user; sessionStorage.setItem('usr', JSON.stringify(m.user)); location.hash = '#/dashboard'; route(); } catch (x) { $('#lerr').textContent = x.message; } };
+  $('#fl').onsubmit = async e => { e.preventDefault(); try { const m = await Api.post('login', Object.fromEntries(new FormData(e.target))); sessionStorage.setItem('tok', m.token); S.user = m.user; sessionStorage.setItem('usr', JSON.stringify(m.user)); await Api.sync(true); location.hash = '#/dashboard'; route(); } catch (x) { $('#lerr').textContent = x.message; } };
 }
 
 const needAuth = k => { if (!can(k)) { location.hash = '#/login'; return false; } return true; };
 const stat = (l, v, c = '') => `<div class="card stat ${c}"><small>${l}</small><b class="mono">${v}</b></div>`;
 
 async function vDashboard() {
-  if (!needAuth('dashboard')) return; view().innerHTML = '<p class="empty">Memuat…</p>';
+  if (!needAuth('dashboard')) return; view().innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   try {
     const r = await Api.post('ringkasan'), mx = Math.max(1, ...r.kas.map(k => Math.abs(k.saldo)));
     view().innerHTML = `<h1 class="pt">Assalamu'alaikum, ${esc(S.user.nama)}</h1><div class="grid4">${stat('Total Saldo Kas', rp(r.total), 'main')}${stat('Pemasukan Bulan Ini', rp(r.masuk), 'grn')}${stat('Pengeluaran Bulan Ini', rp(r.keluar))}${stat('Menunggu Persetujuan', r.menunggu + ' transaksi', r.menunggu ? 'amb' : '')}</div>
@@ -80,11 +80,11 @@ async function vDashboard() {
   } catch (e) { authErr(e); }
 }
 
-function authErr(e) { toast(e.message, 'err'); if (/login|kedaluwarsa|valid/i.test(e.message)) { sessionStorage.clear(); S.user = null; location.hash = '#/login'; route(); } }
+function authErr(e) { toast(e.message, 'err'); if (/login|kedaluwarsa|valid/i.test(e.message)) { sessionStorage.clear(); Cache.clear(); S.user = null; location.hash = '#/login'; route(); } }
 const badge = s => `<span class="bdg ${{ Disetujui: 'ok', Menunggu: 'wait', Ditolak: 'no' }[s] || ''}">${esc(s)}</span>`;
 
 async function vKeuangan() {
-  if (!needAuth('keuangan')) return; view().innerHTML = '<p class="empty">Memuat…</p>';
+  if (!needAuth('keuangan')) return; view().innerHTML = '<div class="skel"></div><div class="skel"></div><div class="skel"></div>';
   try {
     const [r, t] = await Promise.all([Api.post('ringkasan'), Api.post('listTrx')]), ketua = S.user.peran.includes('ketua');
     const opt = r.kas.map(k => `<option value="${esc(k.kode)}">${esc(k.nama)}</option>`).join('');
@@ -96,8 +96,8 @@ async function vKeuangan() {
     <h3 class="sec">Transaksi Terbaru</h3><div class="tw"><table><thead><tr><th>No</th><th>Tanggal</th><th>Kas</th><th>Tipe</th><th>Kategori</th><th class="r">Nominal</th><th>Status</th><th></th></tr></thead><tbody>${t.length ? t.map(x => `<tr><td class="mono">${esc(x.no)}</td><td class="mono">${esc(x.tanggal)}</td><td>${esc(x.kode_kas)}</td><td>${esc(x.tipe)}</td><td>${esc(x.kategori)}</td><td class="r mono">${rp(x.nominal)}</td><td>${badge(x.status)}${x.id_bukti ? ' <a href="https://drive.google.com/file/d/' + esc(x.id_bukti) + '/view" target="_blank" rel="noopener">📎</a>' : ''}</td>
     <td>${ketua && x.status === 'Menunggu' ? `<button class="btn sm" data-n="${esc(x.no)}" data-s="Disetujui">Setujui</button> <button class="btn sm ghost" data-n="${esc(x.no)}" data-s="Ditolak">Tolak</button>` : ''}</td></tr>`).join('') : '<tr><td colspan="8" class="empty">Belum ada transaksi.</td></tr>'}</tbody></table></div>`;
     const f = $('#ft'); f.tipe.onchange = () => $('#lt').hidden = f.tipe.value !== 'transfer';
-    f.onsubmit = async e => { e.preventDefault(); try { const d = Object.fromEntries(new FormData(f)), fl = f.bf.files[0]; delete d.bf; if (fl) d.bukti = await kompres(fl); const x = await Api.post('addTrx', d); toast('Tersimpan: ' + x.no); vKeuangan(); } catch (z) { authErr(z); } };
-    document.querySelectorAll('[data-n]').forEach(b => b.onclick = async () => { try { await Api.post('setStatusTrx', { no: b.dataset.n, status: b.dataset.s }); toast('Status diperbarui'); vKeuangan(); } catch (z) { authErr(z); } });
+    f.onsubmit = async e => { e.preventDefault(); try { const d = Object.fromEntries(new FormData(f)), fl = f.bf.files[0]; delete d.bf; if (fl) d.bukti = await kompres(fl); const tmp = Object.assign({}, d, { no: 'TRX-baru', status: 'Menunggu', pencatat: S.user.username, id_bukti: '' }); delete tmp.bukti; toast('Transaksi dikirim ✓'); Api.opt('addTrx', d, () => { Api.patch('u_listTrx', L => [tmp].concat(L)); Api.patch('u_ringkasan', r => Object.assign({}, r, { menunggu: r.menunggu + 1 })); }).then(x => toast('Tersimpan: ' + x.no)).catch(authErr); } catch (z) { authErr(z); } };
+    document.querySelectorAll('[data-n]').forEach(b => b.onclick = () => { const no = b.dataset.n, st = b.dataset.s; toast('Diproses…'); Api.opt('setStatusTrx', { no: no, status: st }, () => { Api.patch('u_listTrx', L => L.map(x => x.no === no ? Object.assign({}, x, { status: st }) : x)); Api.patch('u_ringkasan', r => Object.assign({}, r, { menunggu: Math.max(0, r.menunggu - 1) })); }).then(() => toast('Status diperbarui')).catch(authErr); });
   } catch (e) { authErr(e); }
 }
 
@@ -110,6 +110,7 @@ function runClock(j) {
     $('#nx') && ($('#nx').textContent = nx + ' ' + j.waktu[nx]); $('#cd') && ($('#cd').textContent = '- ' + hms(d));
     document.querySelectorAll('.pr').forEach(e => e.classList.toggle('act', e.dataset.s === nx));
     if (n % 12 === 0 && window.slide) window.slide();
+    if (window.tvOn) alarm(j, n);
   }; tick(); timer = setInterval(tick, 1000);
 }
 async function vTV() {
@@ -118,7 +119,7 @@ async function vTV() {
   <div class="tvg">${j ? SALAT.map(s => `<div class="pr tvp" data-s="${s}"><small>${s}</small><b class="mono">${j.waktu[s]}</b></div>`).join('') : '<p>Jadwal belum tersedia</p>'}</div>
   <div class="tvb"><span>MENUJU <b id="nx"></b></span><b class="mono" id="cd"></b></div><div class="tvs" id="sl"></div><a class="tvx" href="#/">✕ Keluar</a></div>`;
   window.slide = () => { const a = (p.pengumuman || []).map(x => ({ t: 'PENGUMUMAN', h: x.judul, d: x.isi })).concat(p.agenda.map(x => ({ t: 'AGENDA', h: x.nama, d: x.tanggal + ' · ' + x.waktu + ' · ' + x.lokasi }))); const s = a[i % (a.length || 1)]; $('#sl') && ($('#sl').innerHTML = s ? `<small>${s.t}</small><h2>${esc(s.h)}</h2><p>${esc(s.d)}</p>` : '<h2>Selamat datang di Masjid Al-Jamaal</h2>'); i++; };
-  window.slide(); runClock(j);
+  window.slide(); window.tvOn = true; window.tvDay = new Date().toDateString(); runClock(j); tvSetup(p);
 }
 async function vLaporan() {
   if (!needAuth('laporan')) return;
@@ -167,15 +168,61 @@ const kompres = f => new Promise((ok, no) => { const im = new Image(), r = new F
 async function vPengumuman() {
   if (!needAuth('pengumuman')) return; const p = await loadPub();
   view().innerHTML = `<h1 class="pt">Pengumuman</h1><form id="fp" class="card form"><h3>Buat Pengumuman</h3><label>Judul *<input name="judul" required></label><label>Kategori<input name="kategori" placeholder="Kegiatan"></label><label>Isi *<textarea name="isi" rows="3" required></textarea></label><button class="btn">Terbitkan</button></form>${(p.pengumuman || []).map(x => `<div class="card"><span class="tag">${esc(x.kategori)}</span> <small class="muted">${esc(x.tanggal)}</small><h3>${esc(x.judul)}</h3><p>${esc(x.isi)}</p></div>`).join('')}`;
-  $('#fp').onsubmit = async e => { e.preventDefault(); try { await Api.post('addPengumuman', Object.fromEntries(new FormData(e.target))); S.pub = null; toast('Pengumuman terbit'); vPengumuman(); } catch (z) { authErr(z); } };
+  $('#fp').onsubmit = e => { e.preventDefault(); const d = Object.fromEntries(new FormData(e.target)), t = Object.assign({ tanggal: new Date().toISOString().slice(0, 10) }, d); toast('Pengumuman terbit ✓'); Api.opt('addPengumuman', d, () => Api.patch('publik', p => Object.assign({}, p, { pengumuman: [t].concat(p.pengumuman || []) }))).catch(authErr); };
 }
 async function vLog() {
   if (!needAuth('log')) return;
   try { const L = await Api.post('listLog'); view().innerHTML = `<h1 class="pt">Log Aktivitas</h1><div class="tw"><table><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>${L.map(x => `<tr><td class="mono">${esc(x.waktu)}</td><td>${esc(x.pengguna)}</td><td><span class="tag">${esc(x.aksi)}</span></td><td>${esc(x.detail)}</td></tr>`).join('')}</tbody></table></div>`; } catch (e) { authErr(e); }
 }
 
+function refreshView(force) { // segarkan tampilan tanpa mengganggu pengetikan
+  const a = document.activeElement;
+  if (window.tvOn) return;
+  if (!force && a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && view().contains(a)) return;
+  route();
+}
+const IQ = (typeof IQAMAH_MENIT !== 'undefined') ? IQAMAH_MENIT : { Subuh: 15, Zuhur: 10, Asar: 10, Magrib: 8, Isya: 10 };
+let ac; const fired = {};
+function nada(seq) {
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); let t = ac.currentTime;
+    seq.forEach(([f, d]) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = f; o.connect(g); g.connect(ac.destination); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.7, t + .03); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.start(t); o.stop(t + d + .05); t += d + .1; });
+  } catch (e) { /* suara tidak tersedia */ }
+}
+function suara(jenis) { // pakai audio/adzan.mp3 atau audio/iqamah.mp3 bila ada, jika tidak: nada lonceng
+  const nd = jenis === 'adzan' ? [[660, .8], [880, .8], [660, .8], [880, .8], [660, .8], [880, 1.4]] : [[880, .3], [880, .3], [1040, .8]];
+  const el = new Audio('audio/' + jenis + '.mp3'); el.play().catch(() => nada(nd));
+}
+function banner(h, p, dur) {
+  $('#al')?.remove(); document.body.insertAdjacentHTML('beforeend', `<div class="tvalarm" id="al"><h1>${esc(h)}</h1><p>${esc(p)}</p></div>`);
+  setTimeout(() => $('#al')?.remove(), dur * 1000);
+}
+function alarm(j, n) { // bunyi + layar berkedip saat adzan & iqamah 5 waktu
+  if (window.tvDay !== new Date().toDateString()) return location.reload();
+  const hari = new Date().toDateString();
+  SALAT.forEach(s => {
+    const t = toSec(j.waktu[s]);
+    [['adzan', t, 'ADZAN ' + s.toUpperCase(), 'Mari bersiap menunaikan salat. Iqamah ' + IQ[s] + ' menit lagi.', 120], ['iqamah', t + IQ[s] * 60, 'IQAMAH ' + s.toUpperCase(), 'Luruskan dan rapatkan shaf', 90]].forEach(x => {
+      const key = hari + s + x[0];
+      if (n >= x[1] && n < x[1] + 60 && !fired[key]) { fired[key] = 1; suara(x[0]); banner(x[2], x[3], x[4]); }
+    });
+  });
+}
+function tvSetup(p) {
+  $('.tvw').insertAdjacentHTML('beforeend', '<div class="tvon" id="on"><button class="btn" id="onb">🔊 Tekan OK / klik untuk mulai &amp; aktifkan suara</button></div>');
+  const go = () => { $('#on')?.remove(); nada([[1, .01]]); document.documentElement.requestFullscreen?.().catch(() => {}); navigator.wakeLock?.request('screen').catch(() => {}); };
+  $('#onb').onclick = go;
+  window.onkeydown = e => {
+    const k = e.key.toLowerCase();
+    if (k === 'enter') go();
+    if (k === 'a') { suara('adzan'); banner('TES ADZAN', 'Ini hanya uji coba suara', 8); }
+    if (k === 'i') { suara('iqamah'); banner('TES IQAMAH', 'Ini hanya uji coba suara', 8); }
+  };
+  window.tvR = setInterval(() => Api._get('publik').then(v => { Cache.set('publik', v); S.pub = v; p.agenda = v.agenda; p.pengumuman = v.pengumuman || []; }).catch(() => {}), 600000);
+}
+
 function route() {
-  document.body.classList.remove('tv'); $('#menu').classList.remove('open');
+  document.body.classList.remove('tv'); $('#menu').classList.remove('open'); window.tvOn = false; window.onkeydown = null; clearInterval(window.tvR); $('#al')?.remove();
   clearInterval(timer); nav();
   const h = location.hash.replace('#/', '') || '';
   ({ '': vBeranda, agenda: vAgenda, login: vLogin, dashboard: vDashboard, keuangan: vKeuangan, tv: vTV, laporan: vLaporan, rapat: vRapat, pengguna: vPengguna, pengumuman: vPengumuman, log: vLog }[h] || vBeranda)();
@@ -183,3 +230,6 @@ function route() {
 window.addEventListener('hashchange', route); route();
 
 $('#burger').addEventListener('click', () => $('#menu').classList.toggle('open'));
+setInterval(() => { if (S.user && !document.hidden) Api.sync(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.user) Api.sync(); });
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -20,6 +20,29 @@ Buka alamat `https://NAMAANDA.github.io/NAMA-REPO/` → **Login Pengurus** → u
 
 **Update aplikasi:** ganti file yang berubah lalu klik dua kali `MULAI-DI-SINI.bat` lagi. Jika `Kode.gs` berubah: tempel ulang → Deploy → Manage deployments → ✏️ → New version.
 
+## Tampilkan di TV Masjid + alarm adzan & iqamah
+Alamat layar TV: `https://NAMAANDA.github.io/NAMA-REPO/#/tv`
+
+**Cara termudah dan paling stabil: PC/mini-PC/laptop + kabel HDMI ke TV**
+1. Klik kanan Desktop → New → Shortcut, isi lokasi:
+   `"C:\Program Files\Google\Chrome\Application\chrome.exe" --kiosk --autoplay-policy=no-user-gesture-required https://NAMAANDA.github.io/NAMA-REPO/#/tv`
+2. Agar menyala otomatis saat komputer hidup: tekan `Win + R` → ketik `shell:startup` → pindahkan shortcut tadi ke folder itu.
+3. Windows: Settings → System → Power → Screen & Sleep = **Never**. Atur volume komputer/TV.
+
+**Alternatif:** Android TV / TV box → pasang *Fully Kiosk Browser* (Start URL = alamat di atas, aktifkan *Keep Screen On* dan *Autoplay Audio*); Smart TV → buka alamat lewat browser bawaan; Chromecast → Chrome → ⋮ → Cast → pilih tab.
+
+**Pertama kali dibuka:** muncul layar "Tekan OK / klik untuk mulai & aktifkan suara" → tekan **OK/Enter** (browser mewajibkan satu sentuhan agar suara boleh bunyi). Layar otomatis penuh.
+
+**Uji suara kapan saja:** tekan **A** (tes adzan) atau **I** (tes iqamah) di keyboard.
+
+**Alarm otomatis:** saat waktu adzan 5 waktu, terdengar bunyi dan layar hijau-biru berkedip bertuliskan ADZAN (2 menit); setelah jeda iqamah, bunyi lagi dengan tulisan IQAMAH (1,5 menit). Jeda iqamah diatur di `js/pengaturan.js` (Subuh 15, Zuhur 10, Asar 10, Magrib 8, Isya 10 menit). Suara asli: taruh `adzan.mp3` dan `iqamah.mp3` di folder `audio/`, lalu klik `MULAI-DI-SINI.bat`. Tanpa file itu dipakai nada lonceng.
+TV memuat ulang sendiri tiap tengah malam (jadwal hari baru) dan menyegarkan agenda tiap 10 menit; bila internet putus, jam, jadwal tersimpan, dan alarm tetap jalan.
+
+## Catatan kecepatan
+- Halaman tampil seketika dari data tersimpan, lalu diperbarui diam-diam; Dashboard/Keuangan diperbarui otomatis tiap 1 menit.
+- Setelah update aplikasi, **muat ulang 2 kali** agar versi baru aktif.
+- Perubahan yang dibuat langsung di Google Sheets tampil paling lambat 5 menit; lewat aplikasi langsung.
+
 ## Jika ada masalah
 | Gejala | Penyebab & solusi |
 |---|---|
