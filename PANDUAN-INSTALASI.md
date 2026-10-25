@@ -20,6 +20,14 @@ Buka alamat `https://NAMAANDA.github.io/NAMA-REPO/` → **Login Pengurus** → u
 
 **Update aplikasi:** ganti file yang berubah lalu klik dua kali `MULAI-DI-SINI.bat` lagi. Jika `Kode.gs` berubah: tempel ulang → Deploy → Manage deployments → ✏️ → New version.
 
+## Fitur baru (versi 3)
+- **Menu bertema:** Tampilan & Identitas → pilih tema (Putih-Biru, Hijau, Maroon-Gold, Dark-Gold) dan unggah foto masjid untuk beranda.
+- **Pengguna merangkap jabatan:** menu Pengguna → centang beberapa peran untuk satu akun. Akun itu bisa memilih "Sebagai ..." di sidebar. Tiap akun hanya mengubah profil/fotonya sendiri.
+- **Pengaturan TV:** menu Pengaturan TV → pilih yang tampil, durasi, tema TV, unggah template kajian (bisa dijadwalkan tanggal tampil), dan panduan sambungan ke TV ada di halaman itu.
+- **Laporan & notulen:** tombol Simpan PDF, Bagikan PDF ke WhatsApp (HP: lembar bagikan, PC: PDF terunduh lalu lampirkan), Cetak.
+- **Foto:** pengumuman, agenda, profil, hero beranda, dan poster TV tersimpan di Google Drive (tampil publik lewat tautan); lampiran bukti transaksi tetap privat.
+- **Update dari versi lama:** tempel ulang `Kode.gs` → Deploy → Manage deployments → ✏️ → New version → izinkan akses Drive baru. Kolom baru di Sheet dibuat otomatis. Lalu ekstrak ZIP baru dan klik `MULAI-DI-SINI.bat`.
+
 ## Tampilkan di TV Masjid + alarm adzan & iqamah
 Alamat layar TV: `https://NAMAANDA.github.io/NAMA-REPO/#/tv`
 

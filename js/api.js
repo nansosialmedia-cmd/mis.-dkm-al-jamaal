@@ -5,6 +5,7 @@ const Cache = {
   clear() { Object.keys(localStorage).filter(k => k.indexOf('c_u_') === 0).forEach(k => localStorage.removeItem(k)); }
 };
 const READ = ['ringkasan', 'listTrx', 'listKegiatan', 'listRapat', 'listUsers', 'listLog'];
+// catatan: savePengaturan/updateProfil lewat Api.post biasa lalu sync otomatis
 const Api = {
   busy: 0,
   token: () => sessionStorage.getItem('tok'),
