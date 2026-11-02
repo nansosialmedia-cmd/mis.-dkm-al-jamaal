@@ -20,7 +20,14 @@ Buka alamat `https://NAMAANDA.github.io/NAMA-REPO/` → **Login Pengurus** → u
 
 **Update aplikasi:** ganti file yang berubah lalu klik dua kali `MULAI-DI-SINI.bat` lagi. Jika `Kode.gs` berubah: tempel ulang → Deploy → Manage deployments → ✏️ → New version.
 
-## Fitur baru (versi 3)
+## Versi 4: peran, Bidang Dakwah, Pengawasan
+- **Peran:** Admin, Ketua DKM, **Pengawas DKM**, Sekretaris, Bendahara, **Pengurus Bidang Dakwah**, Pengurus Bidang Lainnya, Petugas TV. Satu akun boleh merangkap beberapa peran (centang di menu Pengguna).
+- **Hak Akses:** menu Hak Akses (Admin) mengatur izin per peran: lihat, tambah, ubah, hapus/arsip, setujui, cetak, ekspor, publikasi. Semua diperiksa di server. Bawaan: Pengawas hanya melihat dan memeriksa (tidak bisa mengubah transaksi/akun); persetujuan transaksi hanya Ketua; publikasi dakwah hanya Ketua.
+- **Bidang Dakwah:** jadwal kajian, pemateri, imam, Jumat, program, kegiatan, dokumentasi, pengajuan anggaran, dan laporan (PDF/cetak). Alur status: rancangan → menunggu persetujuan → disetujui → dipublikasikan → selesai/dijadwalkan ulang/dibatalkan. Hanya yang **dipublikasikan** tampil di Beranda dan TV; kontak pemateri dan anggaran tidak pernah tampil publik. Pembayaran anggaran tetap diproses Bendahara lewat menu Keuangan.
+- **Pengawasan:** catatan temuan, saran, prioritas, pihak tindak lanjut, batas waktu, bukti penyelesaian, riwayat yang tidak bisa dihapus, dan laporan PDF/cetak.
+- **Update dari versi lama:** tempel ulang `Kode.gs` → New version → ekstrak ZIP → `MULAI-DI-SINI.bat`. Semua pengguna akan diminta login ulang sekali. Sheet `Dakwah` dan `Pengawasan` dibuat otomatis. Peran lama `bidang` tetap berlaku (menjadi Pengurus Bidang Lainnya). Jika ada agenda contoh "Kajian Rutin Subuh" dari setup lama, hapus barisnya di sheet `Kegiatan`.
+
+## Fitur versi 3
 - **Menu bertema:** Tampilan & Identitas → pilih tema (Putih-Biru, Hijau, Maroon-Gold, Dark-Gold) dan unggah foto masjid untuk beranda.
 - **Pengguna merangkap jabatan:** menu Pengguna → centang beberapa peran untuk satu akun. Akun itu bisa memilih "Sebagai ..." di sidebar. Tiap akun hanya mengubah profil/fotonya sendiri.
 - **Pengaturan TV:** menu Pengaturan TV → pilih yang tampil, durasi, tema TV, unggah template kajian (bisa dijadwalkan tanggal tampil), dan panduan sambungan ke TV ada di halaman itu.

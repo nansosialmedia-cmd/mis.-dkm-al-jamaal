@@ -4,7 +4,7 @@ const Cache = {
   set(k, v) { try { localStorage.setItem('c_' + k, JSON.stringify(v)); } catch (e) {} },
   clear() { Object.keys(localStorage).filter(k => k.indexOf('c_u_') === 0).forEach(k => localStorage.removeItem(k)); }
 };
-const READ = ['ringkasan', 'listTrx', 'listKegiatan', 'listRapat', 'listUsers', 'listLog'];
+const READ = ['ringkasan', 'listTrx', 'listKegiatan', 'listRapat', 'listUsers', 'listLog', 'listDakwah', 'listPengawasan'];
 // catatan: savePengaturan/updateProfil lewat Api.post biasa lalu sync otomatis
 const Api = {
   busy: 0,
@@ -35,7 +35,7 @@ const Api = {
   async sync(silent) { // 1 panggilan batch untuk semua data pengurus
     if (!Api.token() || Api.busy) return;
     try {
-      const o = await Api._post('bootstrap'); let ch = false;
+      const o = await Api._post('bootstrap'); let ch = false; if (o._izin) { S.user.izin = o._izin; sessionStorage.setItem('usr', JSON.stringify(S.user)); delete o._izin; }
       Object.keys(o).forEach(k => { if (JSON.stringify(o[k]) !== JSON.stringify(Cache.get('u_' + k))) { Cache.set('u_' + k, o[k]); ch = true; } });
       const p = await Api._get('publik');
       if (JSON.stringify(p) !== JSON.stringify(Cache.get('publik'))) { Cache.set('publik', p); S.pub = p; ch = true; }
