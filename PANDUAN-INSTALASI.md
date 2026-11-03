@@ -20,6 +20,14 @@ Buka alamat `https://NAMAANDA.github.io/NAMA-REPO/` → **Login Pengurus** → u
 
 **Update aplikasi:** ganti file yang berubah lalu klik dua kali `MULAI-DI-SINI.bat` lagi. Jika `Kode.gs` berubah: tempel ulang → Deploy → Manage deployments → ✏️ → New version.
 
+## Versi 5: redesain, password sementara, Kas Umum/Pembangunan
+- **Sebelum menimpa file lama, buat titik kembali** (di folder repository): `git tag sebelum-v5` lalu `git push --tags`. Bila ada masalah, versi lama dapat dipulihkan dari tag itu.
+- **Update:** tempel ulang `Kode.gs` → Deploy → Manage deployments → ✏️ → New version → ekstrak ZIP → `MULAI-DI-SINI.bat`. Pengguna perlu login ulang sekali.
+- **Password sementara 123456:** akun BARU (lewat menu Pengguna), akun uji, dan akun yang direset admin memakai sandi sementara `123456` dan wajib menggantinya saat login pertama. Akun lama TIDAK diubah sandinya; untuk mengalihkan akun lama, klik "Reset sandi sementara" pada akunnya.
+- **Kas Umum & Kas Pembangunan:** kolom `kelompok` di sheet `Kas` (isi `umum` atau `pembangunan`; kosong = dibaca dari nama kas). Beri akun peran **Bendahara Umum** atau **Bendahara Pembangunan** agar hanya mengelola kelompok kasnya. Peran lama **Bendahara** tetap mengelola semua kas.
+- **Akun uji:** menu Pengguna → "Buat akun uji semua jabatan". Setelah selesai uji, klik "Nonaktifkan semua akun uji" (termasuk `uji.admin`, yang berhak mengelola akun).
+- **Surat & Dokumen:** modul baru; sheet `Dokumen` dibuat otomatis.
+
 ## Versi 4: peran, Bidang Dakwah, Pengawasan
 - **Peran:** Admin, Ketua DKM, **Pengawas DKM**, Sekretaris, Bendahara, **Pengurus Bidang Dakwah**, Pengurus Bidang Lainnya, Petugas TV. Satu akun boleh merangkap beberapa peran (centang di menu Pengguna).
 - **Hak Akses:** menu Hak Akses (Admin) mengatur izin per peran: lihat, tambah, ubah, hapus/arsip, setujui, cetak, ekspor, publikasi. Semua diperiksa di server. Bawaan: Pengawas hanya melihat dan memeriksa (tidak bisa mengubah transaksi/akun); persetujuan transaksi hanya Ketua; publikasi dakwah hanya Ketua.
